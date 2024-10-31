@@ -1,0 +1,12 @@
+import math
+
+m = float(input('Informe uma medida em KM para ser convertida : '))
+
+mm= m*1000.000
+cm = m*100.00
+mt = m* 1.000
+
+print(f'A medida {m} kilômetros em metros é : {mt} metros')
+print(f'A medida {m} kilômetros em centímetros é : {cm} centímetros')
+print(f'A medida {m} kilômetros em milímetros é: {mm} milímetros')
+      
