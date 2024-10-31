@@ -1,0 +1,15 @@
+# Solicita as notas e converte para float
+n1 = float(input('Informe a nota do primeiro Bimestre: '))
+n2 = float(input('Informe a nota do segundo Bimestre: '))  
+n3 = float(input('Informe a nota da recuperação: ')) 
+
+media = (n1 + n2 + n3) / 3 
+
+
+print(f'A média do aluno é {media:.2f}')
+
+
+if media >= 5:
+    print(f'A média é {media:.2f}, portanto o aluno está aprovado.')  
+else:
+    print(f'A média é {media:.2f}, o rendimento ficou abaixo do esperado, portanto o aluno está reprovado.')  
