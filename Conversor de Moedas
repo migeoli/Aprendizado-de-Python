@@ -1,0 +1,11 @@
+# os valores denotados de cada moeda respondem a cotação de 31/10/2024 comparados ao REAL Brasileiro BRL
+
+s = float(input('SALDO BANCÁRIO R$: '))
+
+d = 6 * s
+e = 6.28 * s
+y = 0.81 * s
+
+print(f'Seu dinheiro em Dólar vale {d}')
+print(f'Seu dinheiro em Euro vale {e}')
+print(f'Seu dinheiro em Yuan Chinês vale {y}')
