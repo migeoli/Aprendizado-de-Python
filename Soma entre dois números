@@ -1,0 +1,7 @@
+vr1 = float(input('digite um valor'))
+
+vr2 = float(input('digite outro valor'))
+
+resultado = vr1 + vr2
+
+print ('a soma entre {} e {} é {}'.format(vr1, vr2, resultado))
