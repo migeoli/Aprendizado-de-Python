@@ -1,0 +1,4 @@
+n = int(input('digite um numero inteiro'))
+ant = n-1
+suc = n+1
+print ('analisando o valor de {} o seu antecessor é {} e seu sucessor é {} '.format(n,ant,suc))
