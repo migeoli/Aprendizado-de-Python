@@ -1,0 +1,9 @@
+n1 = int(input('Forneça um número: '))
+n2 = int(input('Forneça outro número: '))
+n3 = int(input('Forneça mais um número: '))
+n4 = int(input('Forneça outro número: '))
+n5 = int(input('Forneça o último número: '))
+
+media = (n1 + n2 + n3 + n4 + n5) / 5
+
+print('A média entre {}, {}, {}, {}, {} é {}'.format(n1, n2, n3, n4, n5, media))
