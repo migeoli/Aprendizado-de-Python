@@ -1,0 +1,11 @@
+casa = float(input('Informe o valor do Imóvel: R$ '))
+renda = float(input('Informe a renda do cliente: R$ '))
+tempo =int(input('Informe o número de parcelas a ser financiada:  '))
+
+mensalidade = casa / tempo
+
+limite = renda * 0.30
+if mensalidade <= limite:
+    print(f'Crédito aprovado! O imóvel será financiado em {tempo} meses, com uma mensalidade de R$ {mensalidade} ')
+else:
+    print('Crédito não autorizado, verifique junto ao gerente de contas!')
