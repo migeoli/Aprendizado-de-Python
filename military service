@@ -1,0 +1,10 @@
+ano = int(input('Ano de nascimento: '))
+
+serv = (2025  -ano )
+
+if serv < 18:
+    print('Ainda não completou a maior idade !')
+elif serv == 18:
+    print('Idade de Alistamento Obrigatório!')
+elif serv > 18:
+    print('Passou da idade, procure a Junta Militar da sua cidade')
