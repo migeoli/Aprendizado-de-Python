@@ -1,15 +1,18 @@
+from colorama import Fore, Style
+
 # Solicita as notas e converte para float
 n1 = float(input('Informe a nota do primeiro Bimestre: '))
 n2 = float(input('Informe a nota do segundo Bimestre: '))  
 n3 = float(input('Informe a nota da recuperação: ')) 
 
+# Calcula a média
 media = (n1 + n2 + n3) / 3 
 
-
+# Exibe a média do aluno
 print(f'A média do aluno é {media:.2f}')
 
-
+# Verifica a situação do aluno
 if media >= 5:
-    print(f'A média é {media:.2f}, portanto o aluno está aprovado.')  
+    print(f'A média é {media:.2f}, portanto o aluno está {Fore.GREEN}aprovado ✅{Style.RESET_ALL}.')  
 else:
-    print(f'A média é {media:.2f}, o rendimento ficou abaixo do esperado, portanto o aluno está reprovado.')  
+    print(f'A média é {media:.2f}, o rendimento ficou abaixo do esperado, portanto o aluno está {Fore.RED}reprovado 😢{Style.RESET_ALL}.')
