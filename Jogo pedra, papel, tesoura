@@ -1,0 +1,31 @@
+from random import randint
+
+def jogar():
+    print('Escolha:')
+    print('0 - Pedra')
+    print('1 - Papel')
+    print('2 - Tesoura')
+
+    # Opção do jogador
+    jogador = int(input('Faça sua escolha (0, 1 ou 2): '))
+    
+    # Opção do computador
+    computador = randint(0, 2)
+    opcoes = ('pedra', 'papel', 'tesoura')
+    nome = input('Digite seu nome: ')
+
+    print(f'{nome} escolheu: {opcoes[jogador].upper()}')
+    print(f'Mark Robot escolheu: {opcoes[computador].upper()}')
+
+    # Lógica para determinar o resultado do jogo
+    if jogador == computador:
+        print('EMPATOU')
+    elif (jogador == 0 and computador == 2) or \
+         (jogador == 2 and computador == 1) or \
+         (jogador == 1 and computador == 0):
+        print(f'Parabéns {nome}, você ganhou!')
+    else:
+        print('Mark Robot é o vencedor!')
+
+# Iniciar o jogo
+jogar()
