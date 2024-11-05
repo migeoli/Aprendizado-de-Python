@@ -1,0 +1,6 @@
+
+n = int(input('Escreva um número entre 0 e 500: '))
+for n in range(0,500):
+  if n % 3 ==0:
+      print(f'{(n+n)}')
+print('Esses são os números pares da sequência informada')
