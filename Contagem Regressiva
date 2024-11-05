@@ -1,0 +1,6 @@
+
+#contagem regressiva
+for c in range(10, 0, -1):
+    contagem = c
+    print(contagem)
+print('FELIZ ANO NOVO!!!')
