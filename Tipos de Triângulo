@@ -2,14 +2,14 @@ l1 = float(input('Informe o primeiro segmento: '))
 l2 = float(input('Informe o segundo segmento: '))
 l3 = float(input('Informe o terceiro segmento: '))
 
-#verifica condições para que seja um Triângulo
-if l1+l2>l3 and l2+l3>l1 and l3+l1>l2 :
-
-#realiza as comparações para retornar o tipo do Triângulo
- if l1==l2==l3:
-  print('Todos os lados são iguais,Triângulo Equilátero')
-
- elif l1==l2 or l2 == l3 or l3 == l1:
-  print ('Um dos lados é diferente,Triângulo Isóceles')
- else:
-  print('Todos os lados são diferentes,Triângulo Escaleno')
+# Verifica se os segmentos podem formar um triângulo
+if l1 + l2 > l3 and l2 + l3 > l1 and l3 + l1 > l2:
+    # Determina o tipo de triângulo
+    if l1 == l2 == l3:
+        print('Todos os lados são iguais, Triângulo Equilátero.')
+    elif l1 == l2 or l2 == l3 or l3 == l1:
+        print('Dois lados são iguais, Triângulo Isósceles.')
+    else:
+        print('Todos os lados são diferentes, Triângulo Escaleno.')
+else:
+    print('Os segmentos informados não podem formar um triângulo.')
