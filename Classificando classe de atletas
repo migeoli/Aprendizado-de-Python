@@ -1,6 +1,7 @@
+!pip install colorama
+
 from datetime import date
 from colorama import Fore
-
 
 atual = date.today()
 nascimento = int(input('Digite o ano de nascimento: '))
@@ -13,8 +14,7 @@ elif 20 <= idade <= 49:
     print(f'A idade do atleta é de {idade} anos, categoria {Fore.BLUE}ADULTO{Fore.RESET}')
 elif 15 <= idade <= 19:
     print(f'A idade do atleta é de {idade} anos, categoria {Fore.LIGHTMAGENTA_EX}JUNIOR{Fore.RESET}')
-elif 1 == idade  <= 14:
-  print('Categoria KIDS')
-  
+elif idade <= 14:
+    print(f'A idade do atleta é de {idade} anos, categoria {Fore.GREEN}KIDS{Fore.RESET}')
 else:
     print(f'A idade do atleta é de {idade} anos, categoria {Fore.RED}NÃO DEFINIDA{Fore.RESET}')
