@@ -4,3 +4,13 @@ for c in range(10, 0, -1):
     contagem = c
     print(contagem)
 print('FELIZ ANO NOVO!!!')
+
+
+##contagem regressiva.
+
+p= int(input(' Informe o passo: '))
+for c in range(10, 0, -p):
+
+    contagem = c
+    print(contagem)
+print('FELIZ ANO NOVO!!!')
