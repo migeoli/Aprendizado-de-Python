@@ -1,0 +1,21 @@
+from random import randint
+
+def adivinhar():
+    nome = input("Digite seu nome: ")
+    
+    print(f"{nome.capitalize()}, pense em um número de 0 a 10 para que eu, Mark Robot, tente adivinhar.")
+    
+    print(f"Agora, {nome.capitalize()}, anote bem a sua escolha e não me conte nada:")
+
+    computer = randint(0, 10)
+    print(f"A minha escolha é {computer}. Será que acertei?")
+
+    escolha = input("Se eu acertei, digite 'sim'. Caso eu tenha errado, digite 'não': ").strip().lower()
+    if escolha == "sim":
+        print("Eu, Mark Robot, sou o pai da adivinhação!")
+    else:
+        print("Você agora é o Grão Mestre da adivinhação!")
+
+adivinhar()
+
+
