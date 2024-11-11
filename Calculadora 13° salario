@@ -1,22 +1,25 @@
+while True:
+    nome = input('Informe o nome do colaborador: ')
+    salario = float(input('Informe o salário bruto: '))
+    meses = int(input('Informe os meses trabalhados: '))
+    desconto = 0
+    resultado = (salario * meses) / 12
 
+    # Condições para calcular o desconto de INSS com base no salário
+    if salario <= 1412:
+        desconto = resultado * 0.075  # 7,5%
+    elif salario <= 2666.68:
+        desconto = resultado * 0.09   # 9%
+    elif salario <= 4000.1:
+        desconto = resultado * 0.12   # 12%
+    elif salario >= 4000.02:
+        desconto = resultado * 0.14   # 14%
 
-# Calculadora 13° salário
+    liquido = resultado - desconto
 
-salario = float(input('Informe o salário bruto: '))
-meses = int(input('Informe os meses trabalhados: '))
-desconto = 0
-resultado = (salario * meses) / 12
+    print(f'O 13° do colaborador {nome} é de R$ {liquido:.2f}')
 
-# Condições para calcular o desconto de INSS com base no salário
-if salario <= 1412:
-    desconto = resultado * 0.075  # 7,5%
-elif salario <= 2666.68:
-    desconto = resultado * 0.09   # 9%
-elif salario <= 4000.1:
-    desconto = resultado * 0.12   # 12%
-elif salario >= 4000.02:
-    desconto = resultado * 0.14   # 14%
-
-liquido = resultado - desconto
-
-print(f'O 13° do trabalhador é de R$ {liquido:.2f}')
+    escolha = input('Deseja fazer um novo cálculo? s/n: ')
+    if escolha != 's':
+        print('Programa encerrado.')
+        break
