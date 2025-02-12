@@ -1,0 +1,37 @@
+from fastapi import FastAPI
+from pydantic import BaseModel
+import openai
+
+app = FastAPI()
+
+# Classe para entrada de dados
+class UserInput(BaseModel):
+    text: str
+    language: str
+
+# Configuração da API da OpenAI (Substituir pela sua chave de API)
+openai.api_key = "SUA_CHAVE_AQUI"
+
+@app.post("/convert")
+def convert_to_code(user_input: UserInput):
+    """
+    Converte texto em português para código na linguagem escolhida.
+    """
+    prompt = f"""Converta o seguinte texto em código {user_input.language}:
+    {user_input.text}
+    """
+    
+    response = openai.ChatCompletion.create(
+        model="gpt-4-turbo",
+        messages=[
+            {"role": "system", "content": "Você é um conversor de linguagem natural para código."},
+            {"role": "user", "content": prompt}
+        ]
+    )
+    
+    return {"code": response["choices"][0]["message"]["content"]}
+
+# Teste básico
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)
