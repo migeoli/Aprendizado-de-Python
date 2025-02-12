@@ -1,0 +1,51 @@
+import { useState } from "react";
+import axios from "axios";
+
+export default function App() {
+  const [text, setText] = useState("");
+  const [language, setLanguage] = useState("Python");
+  const [code, setCode] = useState("");
+
+  const handleConvert = async () => {
+    try {
+      const response = await axios.post("http://localhost:8000/convert", {
+        text,
+        language,
+      });
+      setCode(response.data.code);
+    } catch (error) {
+      console.error("Erro ao converter:", error);
+    }
+  };
+
+  return (
+    <div className="flex flex-col items-center p-6 gap-4 bg-gray-100 min-h-screen">
+      <h1 className="text-2xl font-bold">Conversor de Texto para Código</h1>
+      <textarea
+        className="w-1/2 p-2 border rounded"
+        rows="5"
+        placeholder="Digite o código em português..."
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+      />
+      <select
+        className="p-2 border rounded"
+        value={language}
+        onChange={(e) => setLanguage(e.target.value)}
+      >
+        <option>Python</option>
+        <option>JavaScript</option>
+        <option>C++</option>
+      </select>
+      <button
+        className="px-4 py-2 bg-blue-500 text-white rounded"
+        onClick={handleConvert}
+      >
+        Converter
+      </button>
+      <pre className="w-1/2 p-2 border rounded bg-white">
+        {code || "O código gerado aparecerá aqui..."}
+      </pre>
+    </div>
+  );
+}
