@@ -1,0 +1,261 @@
+import requests
+from bs4 import BeautifulSoup
+import openai
+import time
+import json
+import pandas as pd
+from datetime import datetime
+import streamlit as st
+from io import BytesIO
+from functools import lru_cache
+import matplotlib.pyplot as plt
+import base64
+
+# Verificação da chave da API
+if "OPENAI_API_KEY" not in st.secrets:
+    st.error("\U0001F6A8 A chave da API da OpenAI não foi configurada. Adicione `OPENAI_API_KEY` no arquivo `.streamlit/secrets.toml`. Veja instruções em: https://docs.streamlit.io/streamlit-cloud/secrets-management")
+    st.stop()
+
+# Configurações iniciais
+openai.api_key = st.secrets["OPENAI_API_KEY"]
+CACHE_EXPIRATION = 3600  # 1 hora em segundos
+
+# --- LOGO E IDENTIDADE VISUAL ---
+st.set_page_config(page_title="Geoli Lab - Mapeador de Intenções", page_icon="🔍", layout="wide")
+
+LOGO_BASE64 = "iVBORw0KGgoAAAANSUhEUgAAAoAAAAHgCAYAAAC4z9zOAAA..."  # Truncado por brevidade
+
+st.markdown(
+    f"""
+    <div style='text-align: center;'>
+        <img src='data:image/png;base64,{LOGO_BASE64}' width='200'>
+    </div>
+    """,
+    unsafe_allow_html=True
+)
+
+st.title("🔍 Geoli Lab | IA para Mapeamento de Intenções de Busca")
+st.markdown("Descubra o que seu público está buscando e gere mensagens impactantes com IA.")
+
+# --- FUNÇÕES DE BUSCA COM CACHE E TRATAMENTO DE ERROS ---
+@lru_cache(maxsize=500)
+def get_google_autocomplete(keyword):
+    try:
+        url = f"http://suggestqueries.google.com/complete/search?client=firefox&q={keyword}"
+        headers = {"User-Agent": "Mozilla/5.0"}
+        response = requests.get(url, headers=headers, timeout=10)
+        response.raise_for_status()
+        time.sleep(0.5)
+        return response.json()[1]
+    except Exception as e:
+        st.error(f"Erro ao buscar autocomplete do Google: {str(e)}")
+        return []
+
+@lru_cache(maxsize=500)
+def get_youtube_autocomplete(keyword):
+    try:
+        url = f"https://suggestqueries.google.com/complete/search?client=firefox&ds=yt&q={keyword}"
+        headers = {"User-Agent": "Mozilla/5.0"}
+        response = requests.get(url, headers=headers, timeout=10)
+        response.raise_for_status()
+        time.sleep(0.5)
+        return response.json()[1]
+    except Exception as e:
+        st.error(f"Erro ao buscar autocomplete do YouTube: {str(e)}")
+        return []
+
+def get_reddit_posts(keyword, limit=5):
+    try:
+        headers = {"User-Agent": "Mozilla/5.0"}
+        url = f"https://www.reddit.com/search.json?q={keyword}&limit={limit}&sort=top"
+        response = requests.get(url, headers=headers, timeout=10)
+        response.raise_for_status()
+        posts = []
+        data = response.json()
+        for post in data["data"]["children"]:
+            title = post["data"]["title"]
+            subreddit = post["data"]["subreddit"]
+            upvotes = post["data"]["ups"]
+            posts.append({
+                "text": f"[r/{subreddit}] {title} (↑{upvotes})",
+                "upvotes": upvotes
+            })
+        return sorted(posts, key=lambda x: x["upvotes"], reverse=True)[:limit]
+    except Exception as e:
+        st.error(f"Erro ao buscar posts no Reddit: {str(e)}")
+        return []
+
+def get_facebook_searches(keyword, limit=5):
+    try:
+        headers = {"User-Agent": "Mozilla/5.0"}
+        url = f"https://www.facebook.com/search/posts/?q={keyword.replace(' ', '%20')}"
+        response = requests.get(url, headers=headers, timeout=10)
+        response.raise_for_status()
+        termos = []
+        soup = BeautifulSoup(response.text, "html.parser")
+        for tag in soup.find_all(['a', 'span']):
+            texto = tag.get_text(strip=True)
+            if keyword.lower() in texto.lower() and texto not in termos:
+                termos.append(texto)
+        return termos[:limit]
+    except Exception as e:
+        st.error(f"Erro ao buscar no Facebook: {str(e)}")
+        return []
+
+def get_instagram_searches(keyword, limit=5):
+    try:
+        headers = {"User-Agent": "Mozilla/5.0"}
+        url = f"https://www.instagram.com/web/search/topsearch/?query={keyword}"
+        response = requests.get(url, headers=headers, timeout=10)
+        response.raise_for_status()
+        termos = []
+        data = response.json()
+        for user in data.get("users", []):
+            termos.append(f"@{user['user']['username']} - {user['user']['full_name']}")
+        return termos[:limit]
+    except Exception as e:
+        st.error(f"Erro ao buscar no Instagram: {str(e)}")
+        return []
+
+def get_tiktok_searches(keyword, limit=5):
+    try:
+        url = f"https://www.tiktok.com/search?q={keyword}"
+        headers = {"User-Agent": "Mozilla/5.0"}
+        response = requests.get(url, headers=headers, timeout=10)
+        response.raise_for_status()
+        termos = []
+        soup = BeautifulSoup(response.text, "html.parser")
+        for tag in soup.find_all(['p', 'a', 'span']):
+            texto = tag.get_text(strip=True)
+            if keyword.lower() in texto.lower() and texto not in termos:
+                termos.append(texto)
+        return termos[:limit]
+    except Exception as e:
+        st.error(f"Erro ao buscar no TikTok: {str(e)}")
+        return []
+
+def get_linkedin_searches(keyword, limit=5):
+    try:
+        url = f"https://www.linkedin.com/search/results/content/?keywords={keyword}"
+        headers = {"User-Agent": "Mozilla/5.0"}
+        response = requests.get(url, headers=headers, timeout=10)
+        response.raise_for_status()
+        termos = []
+        soup = BeautifulSoup(response.text, "html.parser")
+        for tag in soup.find_all(['p', 'span', 'h3']):
+            texto = tag.get_text(strip=True)
+            if keyword.lower() in texto.lower() and texto not in termos:
+                termos.append(texto)
+        return termos[:limit]
+    except Exception as e:
+        st.error(f"Erro ao buscar no LinkedIn: {str(e)}")
+        return []
+
+MARKETPLACES = [
+    ("Mercado Livre", "https://lista.mercadolivre.com.br/{}", "q"),
+    ("Shopee", "https://shopee.com.br/search?keyword={}", "keyword"),
+    ("Magalu", "https://www.magazineluiza.com.br/busca/{}/", "q"),
+    ("Shein", "https://www.shein.com.br/pdsearch/{}", "q"),
+    ("AliExpress", "https://www.aliexpress.com/wholesale?SearchText={}", "SearchText")
+]
+
+def get_marketplace_results(nome_loja, url_base, query_param, keyword):
+    try:
+        headers = {"User-Agent": "Mozilla/5.0"}
+        url = url_base.format(keyword.replace(" ", "+"))
+        response = requests.get(url, headers=headers, timeout=15)
+        response.raise_for_status()
+        termos = []
+        soup = BeautifulSoup(response.text, 'html.parser')
+        for tag in soup.find_all(['title', 'h1', 'h2', 'h3', 'a']):
+            texto = tag.get_text(strip=True)
+            if keyword.lower() in texto.lower() and texto not in termos:
+                termos.append(texto)
+        return termos[:5]
+    except Exception as e:
+        st.error(f"Erro ao buscar no {nome_loja}: {str(e)}")
+        return []
+
+# --- ANÁLISE DE INTENÇÃO E GERAÇÃO DE COPIES EM LOTE ---
+def gerar_intencao_e_copy_em_lote(termos):
+    prompt = "Dado os seguintes termos de busca, identifique para cada um:\n1. A intenção de busca (informacional, comercial, transacional, navegacional)\n2. Uma copy publicitária atrativa com até 30 palavras\n\nFormato:\nTermo: <termo>\nIntenção: <intenção>\nCopy: <copy>\n\nTermos:\n"
+    for termo in termos:
+        prompt += f"- {termo}\n"
+
+    try:
+        resposta = openai.ChatCompletion.create(
+            model="gpt-4",
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0.7
+        )
+        conteudo = resposta.choices[0].message['content']
+        blocos = conteudo.strip().split("Termo:")
+        resultados = {}
+        for bloco in blocos:
+            if not bloco.strip():
+                continue
+            linhas = bloco.strip().split("\n")
+            termo_linha = linhas[0].strip()
+            intencao = next((l for l in linhas if l.lower().startswith("intenção")), "Intenção: Não identificado")
+            copy = next((l for l in linhas if l.lower().startswith("copy")), "Copy: Não gerada")
+            resultados[termo_linha] = {
+                "intencao": intencao.replace("Intenção: ", "").strip(),
+                "copy": copy.replace("Copy: ", "").strip()
+            }
+        return resultados
+    except Exception as e:
+        st.error(f"Erro ao processar batch na OpenAI: {str(e)}")
+        return {}
+
+# --- INTERFACE PRINCIPAL ---
+st.markdown("## Digite uma palavra-chave para análise:")
+query = st.text_input("Palavra-chave", value="celular barato")
+
+if query:
+    with st.spinner("Buscando dados em múltiplas plataformas..."):
+        resultados = {
+            "Google": get_google_autocomplete(query),
+            "YouTube": get_youtube_autocomplete(query),
+            "Reddit": [p['text'] for p in get_reddit_posts(query)],
+            "Facebook": get_facebook_searches(query),
+            "Instagram": get_instagram_searches(query),
+            "TikTok": get_tiktok_searches(query),
+            "LinkedIn": get_linkedin_searches(query)
+        }
+
+        for nome, url_base, param in MARKETPLACES:
+            resultados[nome] = get_marketplace_results(nome, url_base, param, query)
+
+    st.markdown("---")
+    st.markdown("## Resultados e Intenções de Busca com Copies")
+
+    dados_exportacao = []
+
+    for plataforma, termos in resultados.items():
+        if termos:
+            st.subheader(f"🔎 {plataforma}")
+            batch_resultados = gerar_intencao_e_copy_em_lote(termos)
+            for termo in termos:
+                st.markdown(f"**{termo}**")
+                if termo in batch_resultados:
+                    resultado = batch_resultados[termo]
+                    st.markdown(f"Intenção: {resultado['intencao']}  \nCopy: {resultado['copy']}")
+                    dados_exportacao.append({
+                        "Plataforma": plataforma,
+                        "Termo": termo,
+                        "Intenção": resultado['intencao'],
+                        "Copy": resultado['copy']
+                    })
+                else:
+                    st.markdown("Intenção: Não identificado  \nCopy: Não gerada")
+                st.markdown("---")
+
+    if dados_exportacao:
+        df_export = pd.DataFrame(dados_exportacao)
+        csv = df_export.to_csv(index=False).encode("utf-8")
+        st.download_button(
+            label="📥 Baixar resultados em CSV",
+            data=csv,
+            file_name=f"resultados_geoli_lab_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
+            mime="text/csv"
+        )
